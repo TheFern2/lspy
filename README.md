@@ -3,11 +3,11 @@ A clone of ls util in python
 
 - We'll come up limited implementation
     - ls.py without options
-        - alphabetic order
+        - alphabetic order - done
         - do not show dot files - done
         - use columns
     - -l listing files
-        - alphabetic order
+        - alphabetic order - done
         - do not show dot files - done
     - -a all files including dot files - done
     - -s size of each file (non-directory)
