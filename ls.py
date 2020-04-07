@@ -11,23 +11,22 @@ def remove_dot_files(list_files):
     return non_dot_list
 
 
-# 0, list multiple columns
-# 1, list in one column
-def default_listing(listing_mode=0):
+def show_files_one_column(files):
+    for file in files:
+        print(file)
+
+
+def default_listing(show_dot_files=False, list_files=False):
     dir_list = os.listdir()
-    if listing_mode == 0:
+    dir_list.sort(key=str.lower)
+
+    if not show_dot_files:
         dir_list = remove_dot_files(dir_list)
-        print(" ".join(dir_list))
-    if listing_mode == 1:
-        dir_list = remove_dot_files(dir_list)
-        for file in dir_list:
-            print(file)
-    if listing_mode == 2:
-        for file in dir_list:
-            print(file)
-    if listing_mode == 3:
-        for file in dir_list:
-            print(file)
+
+    if list_files:
+        show_files_one_column(dir_list)
+    else:
+        print("  ".join(dir_list))
     
   
 def main():
@@ -37,16 +36,7 @@ def main():
         parser.set_defaults(list_files=False, list_hidden_files=False)
         args = parser.parse_args()
   
-        # if -l is given print in one column
-        if args.list_files:
-            default_listing(1)
-        if args.list_files and args.list_hidden_files:
-            default_listing(3)
-        if args.list_hidden_files:
-            default_listing(2)
-        else:
-            # list files in multiple columns
-            default_listing(0)
+        default_listing(args.list_hidden_files, args.list_files)
  
  
 if __name__ == '__main__':
