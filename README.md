@@ -9,6 +9,7 @@ A clone of ls util in python
     - -l listing files
         - alphabetic order - done
         - do not show dot files - done
+        - show file stats, things like file permissions, owner, size, etc.
     - -a all files including dot files - done
     - -s size of each file (non-directory)
     - -h which gives size in human format

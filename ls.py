@@ -2,6 +2,9 @@
 
 import os
 import argparse
+from pwd import getpwuid
+from grp import getgrgid
+import datetime
 
 def remove_dot_files(list_files):
     non_dot_list = []
@@ -11,9 +14,36 @@ def remove_dot_files(list_files):
     return non_dot_list
 
 
+def find_owner(uid):
+    return getpwuid(uid).pw_name
+
+
+def find_group(gid):
+    return  getgrgid(gid).gr_name
+
+
+# https://www.garron.me/en/go2linux/ls-file-permissions.html
+# https://stackoverflow.com/questions/5337070/how-can-i-get-the-unix-permission-mask-from-a-file
+# https://stackoverflow.com/questions/1830618/how-to-find-the-owner-of-a-file-or-directory-in-python
+# https://stackoverflow.com/questions/39359245/from-stat-st-mtime-to-datetime
+def get_file_stats(file):
+    cwd = os.getcwd()
+    stats = os.stat(cwd + "/" + file)
+    numeric_chmod = oct(stats[0])[-3:]
+    number_of_links = stats[3]
+    user = find_owner(stats[4])
+    group = find_group(stats[5])
+    size = stats[6]
+    mod_timestamp = datetime.datetime.fromtimestamp(stats[8])
+
+    # print(numeric_chmod, number_of_links, user, group, size, mod_timestamp, file)
+    print("{} {} {:10} {:10} {:8} {} {}".format(numeric_chmod, number_of_links, user, group, size, mod_timestamp, file))
+
+
 def show_files_one_column(files):
     for file in files:
-        print(file)
+        #print(file)
+        get_file_stats(file)
 
 
 def default_listing(show_dot_files=False, list_files=False):
