@@ -37,6 +37,7 @@ def get_file_stats(file):
     mod_timestamp = datetime.datetime.fromtimestamp(stats[8])
 
     # print(numeric_chmod, number_of_links, user, group, size, mod_timestamp, file)
+    # https://pyformat.info/
     print("{} {} {:10} {:10} {:8} {} {}".format(numeric_chmod, number_of_links, user, group, size, mod_timestamp, file))
 
 
