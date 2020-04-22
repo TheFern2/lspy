@@ -5,7 +5,9 @@ import argparse
 from pwd import getpwuid
 from grp import getgrgid
 import datetime
-from stat import filemode
+from stat import filemode, S_ISDIR, S_ISREG, S_IEXEC
+from termcolor import colored, cprint
+import stat
 
 def remove_dot_files(list_files):
     non_dot_list = []
@@ -38,9 +40,9 @@ def get_file_stats(file):
     group = find_group(stats[5])
     size = stats[6]
     mod_timestamp = datetime.datetime.fromtimestamp(stats[8])
-    formatted_timestamp = mod_timestamp.strftime("%b  %-d %-H:%M")
+    formatted_timestamp = mod_timestamp.strftime("%b %d %H:%M")
 
-    return MyFileStat(chmod, number_of_links, user, group, size, formatted_timestamp, filename)
+    return MyFileStat(chmod, number_of_links, user, group, size, formatted_timestamp, filename, stats)
 
 
 def show_files_one_column(files):
@@ -88,7 +90,7 @@ def show_files_one_column(files):
             file.group,
             file.size,
             file.mod_timestamp,
-            file.filename,
+            StringColorizer(file.filename, file.stats),
             links_padding=str(number_of_links_length),
             user_padding=str(user_length),
             group_padding=str(group_length),
@@ -110,7 +112,7 @@ def default_listing(show_dot_files=False, list_files=False):
 
 # chmod, number_of_links, user, group, size, mod_timestamp, file
 class MyFileStat:
-    def __init__(self, chmod, number_of_links, user, group, size, mod_timestamp, filename):
+    def __init__(self, chmod, number_of_links, user, group, size, mod_timestamp, filename, stats):
         self.chmod = chmod
         self.number_of_links = number_of_links
         self.user = user
@@ -118,7 +120,32 @@ class MyFileStat:
         self.size = size
         self.mod_timestamp = mod_timestamp
         self.filename = filename
-    
+        self.stats = stats
+
+
+class StringColorizer:
+    def __init__(self, string_to_print, stats):
+        self.string_to_print = string_to_print
+        self.stats = stats
+
+    def __format__(self, format):
+        default_color = 'white'
+        image_extensions = ['.png', '.jpg','.jpeg', '.tif', '.tiff', '.bmp', '.gif', '.png', '.raw']
+
+        for ext in image_extensions:
+            if self.string_to_print.endswith(ext):
+                return colored(self.string_to_print, 'magenta', attrs=['bold'])
+
+        if stat.S_ISDIR(self.stats[0]):
+            return colored(self.string_to_print, 'blue', attrs=['bold'])
+        
+        if stat.S_IXUSR & self.stats[0]:
+            return colored(self.string_to_print, 'green', attrs=['bold'])
+
+        if stat.S_ISREG(self.stats[0]):
+            return colored(self.string_to_print, 'white')
+
+        return colored(self.string_to_print, default_color)
   
 def main():
         parser = argparse.ArgumentParser()
