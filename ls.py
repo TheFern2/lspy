@@ -5,6 +5,7 @@ import argparse
 from pwd import getpwuid
 from grp import getgrgid
 import datetime
+from stat import filemode
 
 def remove_dot_files(list_files):
     non_dot_list = []
@@ -27,25 +28,73 @@ def find_group(gid):
 # https://stackoverflow.com/questions/1830618/how-to-find-the-owner-of-a-file-or-directory-in-python
 # https://stackoverflow.com/questions/39359245/from-stat-st-mtime-to-datetime
 def get_file_stats(file):
+    filename = file
     cwd = os.getcwd()
-    stats = os.stat(cwd + "/" + file)
-    numeric_chmod = oct(stats[0])[-3:]
+    stats = os.stat(cwd + "/" + filename)
+    #numeric_chmod = oct(stats[0])[-3:]
+    chmod = filemode(stats[0])
     number_of_links = stats[3]
     user = find_owner(stats[4])
     group = find_group(stats[5])
     size = stats[6]
     mod_timestamp = datetime.datetime.fromtimestamp(stats[8])
+    formatted_timestamp = mod_timestamp.strftime("%b  %-d %-H:%M")
 
-    # print(numeric_chmod, number_of_links, user, group, size, mod_timestamp, file)
-    # https://pyformat.info/
-    print("{} {} {:10} {:10} {:8} {} {}".format(numeric_chmod, number_of_links, user, group, size, mod_timestamp, file))
+    return MyFileStat(chmod, number_of_links, user, group, size, formatted_timestamp, filename)
 
 
 def show_files_one_column(files):
-    for file in files:
-        #print(file)
-        get_file_stats(file)
+    files_info = []
 
+    # track our columns string size
+    number_of_links_length = 0
+    user_length = 0
+    group_length = 0
+    size_lenght = 0
+
+    for file in files:
+        files_info.append(get_file_stats(file))
+
+    # find longest strings for calculating padding
+    for file in files_info:
+        
+        if len(file.user) > user_length:
+            user_length = len(file.user)
+
+        if len(file.group) > group_length:
+            group_length = len(file.group)
+
+        if len(str(file.size)) > size_lenght:
+            size_lenght = len(str(file.size))
+
+        if len(str(file.number_of_links)) > number_of_links_length:
+            number_of_links_length = len(str(file.number_of_links))
+
+
+    for file in files_info:
+        
+        # Self notes: This was by far the hardest part of this little project. :)
+        # I had never worked with columns much before, once figured out it was a truly
+        # tada moment.
+        # Only uses empty curly braces for items that do not take any parametrized values
+        # All key=value need to go at the end.
+        # Parametrized format in the string goes inside another set of curly braces
+        # "{} {:{first_parameter}{second_parameter}} {:{first_parameter}}"
+        # https://pyformat.info/
+        print("{} {:{links_padding}} {:{user_padding}} {:{group_padding}} {:{align}{size_padding}} {} {}".format(
+            file.chmod,
+            file.number_of_links,
+            file.user,
+            file.group,
+            file.size,
+            file.mod_timestamp,
+            file.filename,
+            links_padding=str(number_of_links_length),
+            user_padding=str(user_length),
+            group_padding=str(group_length),
+            size_padding=str(size_lenght),
+            align='>'   
+            ))
 
 def default_listing(show_dot_files=False, list_files=False):
     dir_list = os.listdir()
@@ -58,6 +107,17 @@ def default_listing(show_dot_files=False, list_files=False):
         show_files_one_column(dir_list)
     else:
         print("  ".join(dir_list))
+
+# chmod, number_of_links, user, group, size, mod_timestamp, file
+class MyFileStat:
+    def __init__(self, chmod, number_of_links, user, group, size, mod_timestamp, filename):
+        self.chmod = chmod
+        self.number_of_links = number_of_links
+        self.user = user
+        self.group = group
+        self.size = size
+        self.mod_timestamp = mod_timestamp
+        self.filename = filename
     
   
 def main():
