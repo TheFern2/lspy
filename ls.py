@@ -45,6 +45,14 @@ def get_file_stats(file):
     return MyFileStat(chmod, number_of_links, user, group, size, formatted_timestamp, filename, stats)
 
 
+# get screen width size
+# if files can fit do a join,
+# if not builds columns vertically
+def show_files_vertical_columns(files):
+    rows, columns = os.popen('stty size', 'r').read().split()
+    print(columns)
+
+
 def show_files_one_column(files):
     files_info = []
 
@@ -59,6 +67,9 @@ def show_files_one_column(files):
 
     # find longest strings for calculating padding
     for file in files_info:
+
+        if len(str(file.number_of_links)) > number_of_links_length:
+            number_of_links_length = len(str(file.number_of_links))
         
         if len(file.user) > user_length:
             user_length = len(file.user)
@@ -68,9 +79,6 @@ def show_files_one_column(files):
 
         if len(str(file.size)) > size_lenght:
             size_lenght = len(str(file.size))
-
-        if len(str(file.number_of_links)) > number_of_links_length:
-            number_of_links_length = len(str(file.number_of_links))
 
 
     for file in files_info:
@@ -108,7 +116,8 @@ def default_listing(show_dot_files=False, list_files=False):
     if list_files:
         show_files_one_column(dir_list)
     else:
-        print("  ".join(dir_list))
+        print("  ".join(dir_list)) # initial print
+        # TODO show_files_vertical_columns(dir_list)
 
 # chmod, number_of_links, user, group, size, mod_timestamp, file
 class MyFileStat:
