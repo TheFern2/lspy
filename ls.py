@@ -48,12 +48,19 @@ def get_file_stats(file, get_oct_chmod=False):
     return MyFileStat(chmod, number_of_links, user, group, size, formatted_timestamp, filename, stats)
 
 
-# get screen width size
+# get terminal width size
 # if files can fit do a join,
 # if not builds columns vertically
 def show_files_vertical_columns(files):
     rows, columns = os.popen('stty size', 'r').read().split()
     print(columns)
+    files_info = []
+
+    for file in files:
+        files_info.append(get_file_stats(file))
+
+    for file in files_info:
+        print("{}".format(StringColorizer(file.filename, file.stats)), end=" ")
 
 
 def show_files_one_column(files, get_oct_chmod=False):
@@ -119,8 +126,8 @@ def default_listing(show_dot_files=False, list_files=False, get_oct_chmod=False)
     if list_files:
         show_files_one_column(dir_list, get_oct_chmod)
     else:
-        print("  ".join(dir_list)) # initial print
-        # TODO show_files_vertical_columns(dir_list)
+        #print("  ".join(dir_list)) # initial print
+        show_files_vertical_columns(dir_list)
 
 # chmod, number_of_links, user, group, size, mod_timestamp, file
 class MyFileStat:
