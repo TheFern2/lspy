@@ -29,12 +29,15 @@ def find_group(gid):
 # https://stackoverflow.com/questions/5337070/how-can-i-get-the-unix-permission-mask-from-a-file
 # https://stackoverflow.com/questions/1830618/how-to-find-the-owner-of-a-file-or-directory-in-python
 # https://stackoverflow.com/questions/39359245/from-stat-st-mtime-to-datetime
-def get_file_stats(file):
+def get_file_stats(file, get_oct_chmod=False):
     filename = file
     cwd = os.getcwd()
     stats = os.stat(cwd + "/" + filename)
-    #numeric_chmod = oct(stats[0])[-3:]
-    chmod = filemode(stats[0])
+    if get_oct_chmod:
+        chmod = oct(stats[0])[-3:]
+    else:
+        chmod = filemode(stats[0])
+    #numeric_chmod = oct(stats[0])[-3:]    
     number_of_links = stats[3]
     user = find_owner(stats[4])
     group = find_group(stats[5])
@@ -53,7 +56,7 @@ def show_files_vertical_columns(files):
     print(columns)
 
 
-def show_files_one_column(files):
+def show_files_one_column(files, get_oct_chmod=False):
     files_info = []
 
     # track our columns string size
@@ -63,7 +66,7 @@ def show_files_one_column(files):
     size_lenght = 0
 
     for file in files:
-        files_info.append(get_file_stats(file))
+        files_info.append(get_file_stats(file, get_oct_chmod))
 
     # find longest strings for calculating padding
     for file in files_info:
@@ -106,7 +109,7 @@ def show_files_one_column(files):
             align='>'   
             ))
 
-def default_listing(show_dot_files=False, list_files=False):
+def default_listing(show_dot_files=False, list_files=False, get_oct_chmod=False):
     dir_list = os.listdir()
     dir_list.sort(key=str.lower)
 
@@ -114,7 +117,7 @@ def default_listing(show_dot_files=False, list_files=False):
         dir_list = remove_dot_files(dir_list)
 
     if list_files:
-        show_files_one_column(dir_list)
+        show_files_one_column(dir_list, get_oct_chmod)
     else:
         print("  ".join(dir_list)) # initial print
         # TODO show_files_vertical_columns(dir_list)
@@ -160,10 +163,11 @@ def main():
         parser = argparse.ArgumentParser()
         parser.add_argument('-l', '--list', dest='list_files', help='list files', action='store_true')
         parser.add_argument('-a', '--all', dest='list_hidden_files', help='list hidden files', action='store_true')
-        parser.set_defaults(list_files=False, list_hidden_files=False)
+        parser.add_argument('-n', '--numeric-chmod',  dest='numeric_chmod',help='chmod as octal numeric', action='store_true')
+        parser.set_defaults(list_files=False, list_hidden_files=False, numeric_chmod=False)
         args = parser.parse_args()
   
-        default_listing(args.list_hidden_files, args.list_files)
+        default_listing(args.list_hidden_files, args.list_files, args.numeric_chmod)
  
  
 if __name__ == '__main__':
