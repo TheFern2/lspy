@@ -53,7 +53,7 @@ def get_file_stats(file, get_oct_chmod=False):
 # if not builds columns vertically
 def show_files_vertical_columns(files):
     rows, columns = os.popen('stty size', 'r').read().split()
-    print(columns)
+    # print(columns)
     files_info = []
 
     for file in files:
